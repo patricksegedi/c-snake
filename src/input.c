@@ -1,11 +1,8 @@
 #include "input.h"
 #include "snake.h"
+#include <SDL3/SDL.h>
 
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
 
-static struct termios original_termios;
 static int quit_requested;
 static int game_paused;
 
@@ -13,21 +10,6 @@ void init_input(void)
 {
     quit_requested = 0;
     game_paused = 0;
-    
-    tcgetattr(STDIN_FILENO, &original_termios);
-
-    struct termios raw = original_termios;
-
-    raw.c_lflag &= ~(ICANON | ECHO);
-
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-
-    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
-}
-
-void cleanup_input(void)
-{
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &original_termios);
 }
 
 int quit_game(void)
@@ -42,38 +24,46 @@ int pause_game(void)
 
 void handle_input(void)
 {
-    char key;
+    SDL_Event event;
 
-    if (read(STDIN_FILENO, &key, 1) != 1)
-        return;
-    
-    switch (key) {
-        case 'q':
+    while (SDL_PollEvent(&event)) {
+
+        if (event.type == SDL_EVENT_QUIT) {
             quit_requested = 1;
-            break;
+        }
 
-        case 'p':
-            game_paused = !game_paused;
-            break;
+        if (event.type == SDL_EVENT_KEY_DOWN) {
 
-        case 'w':
-            set_direction(UP);
-            game_paused = 0;
-            break;
-            
-        case 'a':
-            set_direction(LEFT);
-            game_paused = 0;
-            break;
+            switch (event.key.key) {
 
-        case 's':
-            set_direction(DOWN);
-            game_paused = 0;
-            break;
+                case SDLK_Q:
+                    quit_requested = 1;
+                    break;
 
-        case 'd':
-            set_direction(RIGHT);
-            game_paused = 0;
-            break;
+                case SDLK_P:
+                    game_paused = !game_paused;
+                    break;
+
+                case SDLK_W:
+                    set_direction(UP);
+                    game_paused = 0;
+                    break;
+
+                case SDLK_A:
+                    set_direction(LEFT);
+                    game_paused = 0;
+                    break;
+
+                case SDLK_S:
+                    set_direction(DOWN);
+                    game_paused = 0;
+                    break;
+
+                case SDLK_D:
+                    set_direction(RIGHT);
+                    game_paused = 0;
+                    break;
+            }
+        }
     }
 }

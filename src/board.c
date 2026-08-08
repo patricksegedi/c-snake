@@ -1,6 +1,4 @@
 #include "board.h"
-#include "snake.h"
-#include "food.h"
 
 char board[BOARD_HEIGHT][BOARD_WIDTH];
 

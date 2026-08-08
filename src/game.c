@@ -4,9 +4,7 @@
 #include "snake.h"
 #include "food.h"
 #include "input.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <SDL3/SDL.h>
 
 static void init_game(void);
 static int game_loop(void);
@@ -14,7 +12,9 @@ static int game_over_screen(int score);
 
 void run_game(void)
 {
-    atexit(cleanup_input);
+    if (!init_render())
+        return;
+
     while (1) {
 
         init_game();
@@ -22,8 +22,10 @@ void run_game(void)
         int score = game_loop();
 
         if (!game_over_screen(score))
-            return;
+            break;
     }
+
+    cleanup_render();
 }
 
 static void init_game(void)
@@ -39,15 +41,21 @@ static int game_loop(void)
     int score = 0;
     int game_over = 0;
 
-    while (1) {
-        system("clear");
+    Uint64 last_move = SDL_GetTicks();
+
+    while (!game_over) {
 
         handle_input();
 
-        if (quit_game())
+        if (quit_game()) {
             game_over = 1;
+            continue;
+        }
 
-        if (!pause_game()) {
+        Uint64 current_time = SDL_GetTicks();
+
+        if (!pause_game() && current_time - last_move >= MOVE_INTERVAL) {
+
             MoveResult result = move_snake();
 
             switch (result) {
@@ -62,19 +70,13 @@ static int game_loop(void)
                     game_over = 1;
                     break;
             }
+
+            last_move = current_time;
         }
 
-        if (game_over)
-            break;
+        draw_game(score);
 
-        draw_board();
-
-        if (pause_game())
-            printf("PAUSED\n");
-
-        printf("Score: %d\n", score);
-
-        usleep(MOVE_SPEED);
+        SDL_Delay(16);
     }
 
     return score;
@@ -82,24 +84,26 @@ static int game_loop(void)
 
 static int game_over_screen(int score)
 {
-    system("clear");
-    printf("Game Over!\n");
-    printf("Final score: %d\n", score);
-    printf("Press R to restart\n");
-    printf("Press Q to quit\n");
+    draw_game_over(score);
 
     while (1) {
-        char key;
+        SDL_Event event;
 
-        if (read(STDIN_FILENO, &key, 1) != 1) {
-            usleep(10000);
-            continue;
+        while (SDL_PollEvent(&event)) {
+
+            if (event.type == SDL_EVENT_QUIT)
+                return 0;
+
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+
+                if (event.key.key == SDLK_R)
+                    return 1;
+
+                if (event.key.key == SDLK_Q)
+                    return 0;
+            }
         }
 
-        if (key == 'r')
-            return 1;
-
-        if (key == 'q')
-            return 0;
+        SDL_Delay(16);
     }
 }

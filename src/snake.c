@@ -6,6 +6,7 @@
 static Position snake[MAX_SNAKE_LENGTH];
 static int snake_length;
 static Direction direction;
+static Direction next_direction;
 
 static void draw_snake(void)
 {
@@ -69,6 +70,7 @@ void init_snake(void)
 
     snake_length = INITIAL_SNAKE_LENGTH;
     direction = RIGHT;
+    next_direction = RIGHT;
 
     snake[0] = (Position){ center_x, center_y };
     snake[1] = (Position){ center_x - 1, center_y };
@@ -86,6 +88,8 @@ MoveResult move_snake(void)
     for (int i = snake_length - 1; i > 0; i--) {
         snake[i] = snake[i - 1];
     }
+
+    direction = next_direction;
     
     switch (direction) {
         case RIGHT:
@@ -134,5 +138,5 @@ void set_direction(Direction new_direction)
     if (direction == RIGHT && new_direction == LEFT)
         return;
 
-    direction = new_direction;
+    next_direction = new_direction;
 }
