@@ -1,7 +1,7 @@
 #ifndef GAME_CONFIG_H
 #define GAME_CONFIG_H
 
-#define MOVE_INTERVAL 125
+#define MOVE_INTERVAL 150
 
 #define BOARD_WIDTH 40
 #define BOARD_HEIGHT 20

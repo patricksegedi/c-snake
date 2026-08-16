@@ -2,11 +2,13 @@
 #include "board.h"
 #include "game_types.h"
 #include "food.h"
+#include "input.h"
 
 static Position snake[MAX_SNAKE_LENGTH];
-static int snake_length;
+static Direction snake_direction[MAX_SNAKE_LENGTH];
 static Direction direction;
 static Direction next_direction;
+static int snake_length;
 
 static void draw_snake(void)
 {
@@ -77,6 +79,10 @@ void init_snake(void)
     snake[2] = (Position){ center_x - 2, center_y };
     snake[3] = (Position){ center_x - 3, center_y };
 
+    for (int i = 0; i < snake_length; i++) {
+        snake_direction[i] = RIGHT;
+    }
+
     draw_snake();
 }
 
@@ -87,10 +93,13 @@ MoveResult move_snake(void)
 
     for (int i = snake_length - 1; i > 0; i--) {
         snake[i] = snake[i - 1];
+        snake_direction[i] = snake_direction[i - 1];
     }
 
-    direction = next_direction;
-    
+    direction = get_next_direction();
+    next_direction = direction;
+    snake_direction[0] = direction;
+
     switch (direction) {
         case RIGHT:
             snake[0].x++;
@@ -115,8 +124,8 @@ MoveResult move_snake(void)
     if (ate_food()) {
         snake[snake_length] = old_tail;
         snake_length++;
-        spawn_food();
         draw_snake();
+        spawn_food();
         return MOVE_ATE_FOOD;
     }
 
@@ -140,3 +149,38 @@ void set_direction(Direction new_direction)
 
     next_direction = new_direction;
 }
+
+Direction get_direction(void)
+{
+    return direction;
+}
+
+Direction get_segment_direction(int index)
+{
+    return snake_direction[index];
+}
+
+int get_segment_index(Position position)
+{
+    for (int i = 0; i < snake_length; i++) {
+
+        if (snake[i].x == position.x &&
+            snake[i].y == position.y) {
+
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+Position get_segment_position(int index)
+{
+    return snake[index];
+}
+
+int get_snake_length(void)
+{
+    return snake_length;
+}
+

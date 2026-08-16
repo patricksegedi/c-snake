@@ -4,10 +4,12 @@
 #include "snake.h"
 #include "food.h"
 #include "input.h"
+#include "pause.h"
+#include "game_types.h"
 #include <SDL3/SDL.h>
 
 static void init_game(void);
-static int game_loop(void);
+static GameResult game_loop(int *score);
 static int game_over_screen(int score);
 
 void run_game(void)
@@ -19,7 +21,12 @@ void run_game(void)
 
         init_game();
 
-        int score = game_loop();
+        int score = 0;
+
+        GameResult result = game_loop(&score);
+
+        if (result == GAME_RESTART)
+            continue;
 
         if (!game_over_screen(score))
             break;
@@ -36,9 +43,8 @@ static void init_game(void)
     init_input();
 }
 
-static int game_loop(void)
+static GameResult game_loop(int *score)
 {
-    int score = 0;
     int game_over = 0;
 
     Uint64 last_move = SDL_GetTicks();
@@ -52,6 +58,9 @@ static int game_loop(void)
             continue;
         }
 
+        if (restart_game())
+            return GAME_RESTART;
+
         Uint64 current_time = SDL_GetTicks();
 
         if (!pause_game() && current_time - last_move >= MOVE_INTERVAL) {
@@ -63,7 +72,7 @@ static int game_loop(void)
                     break;
 
                 case MOVE_ATE_FOOD:
-                    score++;
+                    (*score)++;
                     break;
 
                 case MOVE_GAME_OVER:
@@ -74,12 +83,17 @@ static int game_loop(void)
             last_move = current_time;
         }
 
-        draw_game(score);
+        float interpolation = (float)(current_time - last_move) / MOVE_INTERVAL;
+
+        if (interpolation > 1.0f)
+            interpolation = 1.0f;
+
+        draw_game(*score);
 
         SDL_Delay(16);
     }
 
-    return score;
+    return GAME_OVER;
 }
 
 static int game_over_screen(int score)

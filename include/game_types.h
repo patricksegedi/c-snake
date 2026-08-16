@@ -7,4 +7,16 @@ typedef struct
     int y;
 } Position;
 
+typedef enum {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+} Direction;
+
+typedef enum {
+    GAME_OVER,
+    GAME_RESTART
+} GameResult;
+
 #endif
