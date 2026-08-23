@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 find_package(SDL3 REQUIRED CONFIG)
 find_package(SDL3_ttf REQUIRED CONFIG)
 find_package(SDL3_image REQUIRED CONFIG)
+find_package(SDL3_mixer REQUIRED CONFIG)
 
 add_executable(c-snake
     src/main.c
@@ -22,7 +23,6 @@ add_executable(c-snake
     src/render_main_menu.c
     src/input_main_menu.c
     
-
     src/render_game_over.c
 
     src/render.c
@@ -30,6 +30,7 @@ add_executable(c-snake
     src/snake.c
     src/food.c
     src/input.c
+    src/audio.c
 
     src/pause.c
     src/render_pause.c
@@ -43,4 +44,5 @@ target_link_libraries(c-snake PRIVATE
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
     SDL3_image::SDL3_image
+    SDL3_mixer::SDL3_mixer
 )

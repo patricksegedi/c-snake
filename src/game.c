@@ -1,5 +1,6 @@
 #include "game.h"
 #include "render.h"
+#include "audio.h"
 #include "board.h"
 #include "snake.h"
 #include "food.h"
@@ -17,13 +18,21 @@ void run_game(void)
 {
     if (!init_render())
         return;
+    
+    if (!init_audio()) {
+        cleanup_render();
+        return;
+    }
 
     if (run_main_menu() == 1) {
+        cleanup_audio();
         cleanup_render();
         return;
     }
 
     while (1) {
+
+        play_gameplay_music();
 
         init_game();
 
@@ -38,6 +47,7 @@ void run_game(void)
             break;
     }
 
+    cleanup_audio();
     cleanup_render();
 }
 
@@ -52,12 +62,28 @@ static void init_game(void)
 static GameResult game_loop(int *score)
 {
     int game_over = 0;
+    int was_paused = 0;
 
     Uint64 last_move = SDL_GetTicks();
 
     while (!game_over) {
 
         handle_input();
+
+        if (pause_game()) {
+
+            if (!was_paused) {
+                pause_gameplay_music();
+                was_paused = 1;
+            }
+
+        } else {
+
+            if (was_paused) {
+                resume_gameplay_music();
+                was_paused = 0;
+            }
+        }
 
         if (quit_game()) {
             game_over = 1;
@@ -78,6 +104,7 @@ static GameResult game_loop(int *score)
                     break;
 
                 case MOVE_ATE_FOOD:
+                    play_eat_sound();
                     (*score)++;
                     break;
 
@@ -89,15 +116,12 @@ static GameResult game_loop(int *score)
             last_move = current_time;
         }
 
-        float interpolation = (float)(current_time - last_move) / MOVE_INTERVAL;
-
-        if (interpolation > 1.0f)
-            interpolation = 1.0f;
-
         draw_game(*score);
 
         SDL_Delay(16);
     }
+
+    stop_gameplay_music();
 
     return GAME_OVER;
 }
