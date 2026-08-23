@@ -6,16 +6,20 @@
 #include "render_pause.h"
 #include "input.h"
 #include "input_pause.h"
+#include "render_main_menu.h"
 #include "render_game_over.h"
 #include "game_config.h"
 
+
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdio.h>
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static TTF_Font *font = NULL;
+
 
 int init_render(void)
 {
@@ -53,6 +57,11 @@ int init_render(void)
         return 0;
     }
 
+    if (!init_main_menu_render(renderer)) {
+        cleanup_render();
+        return 0;
+    }
+
     if (!init_board_render(renderer)) {
         cleanup_render();
         return 0;
@@ -73,7 +82,21 @@ int init_render(void)
         return 0;
     }
 
+    if (!init_game_over_render(renderer)) {
+        cleanup_render();
+        return 0;
+    }
+
     return 1;
+}
+
+void draw_main_menu(int selected_option)
+{
+    SDL_RenderClear(renderer);
+
+    draw_main_menu_screen(renderer, selected_option);
+
+    SDL_RenderPresent(renderer);
 }
 
 void draw_game(int score)
@@ -104,6 +127,8 @@ void cleanup_render(void)
     cleanup_hud_render();
     cleanup_food_render();
     cleanup_snake_render();
+    cleanup_main_menu_render();
+    cleanup_game_over_render();
 
     if (renderer != NULL)
         SDL_DestroyRenderer(renderer);

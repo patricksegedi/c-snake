@@ -18,6 +18,11 @@ add_executable(c-snake
     src/render_snake.c
     src/render_hud.c
 
+    src/main_menu.c
+    src/render_main_menu.c
+    src/input_main_menu.c
+    
+
     src/render_game_over.c
 
     src/render.c

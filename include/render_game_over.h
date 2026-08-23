@@ -4,6 +4,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+int init_game_over_render(SDL_Renderer *renderer);
+
 void render_game_over(SDL_Renderer *renderer, TTF_Font *font, int score);
+
+void cleanup_game_over_render(void);
 
 #endif

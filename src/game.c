@@ -5,6 +5,7 @@
 #include "food.h"
 #include "input.h"
 #include "pause.h"
+#include "main_menu.h"
 #include "game_types.h"
 #include <SDL3/SDL.h>
 
@@ -16,6 +17,11 @@ void run_game(void)
 {
     if (!init_render())
         return;
+
+    if (run_main_menu() == 1) {
+        cleanup_render();
+        return;
+    }
 
     while (1) {
 
